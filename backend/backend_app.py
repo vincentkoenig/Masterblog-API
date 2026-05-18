@@ -14,8 +14,8 @@ POSTS = [
 def get_posts():
     if request.method == 'GET':
         sort = request.args.get('sort')
-        direction = request.args.get('direction')
-        if sort and direction:
+        direction = request.args.get('direction', 'asc')
+        if sort:
             if sort not in ['title', 'content'] or direction not in ['asc', 'desc']:
                 return jsonify({"Error": "Invalid sort field or direction"}), 400
             sorted_posts = sorted(POSTS, key=lambda post: post[sort], reverse=direction == 'desc')
@@ -24,6 +24,9 @@ def get_posts():
 
     elif request.method == 'POST':
         data = request.json
+        if not data:
+            return jsonify({"Error": "Data not found"}), 400
+
         if not data.get('title') or not data.get('content'):
             return jsonify({"Error": "No title or content"}), 400
 
@@ -51,6 +54,9 @@ def update_post(id):
     for data in POSTS:
         if data['id'] == id:
             request_data = request.json
+            if not request_data:
+                return jsonify({"Error": "Data not found"}), 400
+
             data['title'] = request_data.get('title', data['title'])
             data['content'] = request_data.get('content', data['content'])
             return jsonify(data), 200
